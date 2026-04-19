@@ -1,163 +1,230 @@
-// DOM Elements
-const views = {
-  subject: document.getElementById('subject-view'),
-  quiz: document.getElementById('quiz-view'),
-  result: document.getElementById('result-view')
-};
+// ======================= QUIZ ENGINE =======================
+let quizState = {
+            questions: [],
+            currIdx: 0,
+            correct: 0,
+            wrong: 0,
+            timer: null,
+            timeRem: 1800,
+            timeElapsed: 0
+        };
 
-const elements = {
-  subjectGrid: document.getElementById('subject-grid'),
-  quizSubjectTitle: document.getElementById('quiz-subject-title'),
-  progressText: document.getElementById('progress-text'),
-  progressBar: document.getElementById('progress-bar'),
-  questionText: document.getElementById('question-text'),
-  optionsContainer: document.getElementById('options-container'),
-  nextBtn: document.getElementById('next-btn'),
-  finalScore: document.getElementById('final-score'),
-  totalQuestions: document.getElementById('total-questions'),
-  homeBtn: document.getElementById('home-btn')
-};
+        const engineViews = {
+            setup: document.getElementById('practice-setup'),
+            quiz: document.getElementById('practice-engine'),
+            result: document.getElementById('practice-result')
+        };
 
-// Application State
-let currentState = {
-  subject: null,
-  questions: [],
-  currentQuestionIndex: 0,
-  score: 0
-};
+        function switchPracticeView(viewName) {
+            engineViews.setup.style.display = 'none';
+            engineViews.quiz.style.display = 'none';
+            engineViews.result.style.display = 'none';
+            engineViews[viewName].style.display = 'block';
+        }
 
-// Initialization
-function init() {
-  renderSubjectGrid();
-  
-  elements.nextBtn.addEventListener('click', handleNextQuestion);
-  elements.homeBtn.addEventListener('click', () => switchView('subject'));
-}
+        function startQuiz() {
+            const subject = document.getElementById('setup-subject').value;
+            const mode = document.getElementById('setup-mode').value;
+            let qCount = parseInt(document.getElementById('setup-count').value);
+            
+            // Build Question Array
+            let pool = specificQuestions[subject] ? [...specificQuestions[subject]] : [...fallbackQuestions];
+            pool.sort(() => Math.random() - 0.5); // shuffle
+            
+            // Generate extra mocked questions if requested count > pool
+            while(pool.length < qCount) {
+                pool.push({
+                    q: `Advanced mocked question regarding ${subject} - Segment ${pool.length}`,
+                    opts: ["Alpha", "Beta", "Gamma", "Delta"],
+                    ans: Math.floor(Math.random() * 4)
+                });
+            }
+            
+            quizState.questions = pool.slice(0, qCount);
+            quizState.currIdx = 0;
+            quizState.correct = 0;
+            quizState.wrong = 0;
+            quizState.timeElapsed = 0;
 
-// Switch between views
-function switchView(viewName) {
-  Object.values(views).forEach(view => {
-    view.classList.remove('active');
-    view.classList.add('hidden');
-  });
-  
-  views[viewName].classList.remove('hidden');
-  views[viewName].classList.add('active');
-}
+            document.getElementById('engine-subject').textContent = subject;
+            
+            // Timer logic
+            clearInterval(quizState.timer);
+            if(mode === 'Practice') {
+                document.getElementById('engine-timer').textContent = "⏳ 00:00";
+                quizState.timer = setInterval(() => {
+                    quizState.timeElapsed++;
+                    const m = Math.floor(quizState.timeElapsed / 60).toString().padStart(2, '0');
+                    const s = (quizState.timeElapsed % 60).toString().padStart(2, '0');
+                    document.getElementById('engine-timer').textContent = `⏳ ${m}:${s}`;
+                }, 1000);
+            } else {
+                quizState.timeRem = qCount * 60; // 1 min per question
+                updateTimerUI();
+                quizState.timer = setInterval(() => {
+                    quizState.timeRem--;
+                    quizState.timeElapsed++;
+                    updateTimerUI();
+                    if(quizState.timeRem <= 0) {
+                        clearInterval(quizState.timer);
+                        showResults();
+                        showToast("Time's Up!");
+                    }
+                }, 1000);
+            }
 
-// Render dynamic subject grid
-function renderSubjectGrid() {
-  const subjects = Object.keys(quizData);
-  elements.subjectGrid.innerHTML = '';
+            switchPracticeView('quiz');
+            renderQuestion();
+            showToast(`${mode} Test Started!`);
+        }
 
-  subjects.forEach(subject => {
-    const card = document.createElement('div');
-    card.className = 'subject-card';
-    card.innerHTML = `
-      <div class="subject-icon">${subjectIcons[subject]}</div>
-      <h3>${subject}</h3>
-    `;
-    card.addEventListener('click', () => startQuiz(subject));
-    elements.subjectGrid.appendChild(card);
-  });
-}
+        function updateTimerUI() {
+            const m = Math.floor(quizState.timeRem / 60).toString().padStart(2, '0');
+            const s = (quizState.timeRem % 60).toString().padStart(2, '0');
+            document.getElementById('engine-timer').textContent = `⏳ ${m}:${s}`;
+        }
 
-// Start Quiz for specific subject
-function startQuiz(subjectName) {
-  currentState.subject = subjectName;
-  currentState.questions = quizData[subjectName];
-  currentState.currentQuestionIndex = 0;
-  currentState.score = 0;
+        function renderQuestion() {
+            const qObj = quizState.questions[quizState.currIdx];
+            const total = quizState.questions.length;
+            const current = quizState.currIdx + 1;
 
-  elements.quizSubjectTitle.textContent = subjectName;
-  switchView('quiz');
-  renderQuestion();
-}
+            document.getElementById('engine-counter').textContent = `Question ${current}/${total}`;
+            document.getElementById('engine-bar').style.width = `${(current/total)*100}%`;
+            
+            document.getElementById('engine-question').textContent = qObj.q;
+            document.getElementById('engine-status').textContent = `Pending Answers`;
+            
+            const btnNext = document.getElementById('engine-next');
+            btnNext.disabled = true;
+            btnNext.textContent = current === total ? "Submit Test" : "Next Question";
 
-// Render current question
-function renderQuestion() {
-  const question = currentState.questions[currentState.currentQuestionIndex];
-  const total = currentState.questions.length;
-  const current = currentState.currentQuestionIndex + 1;
+            const optionsContainer = document.getElementById('engine-options');
+            optionsContainer.innerHTML = '';
+            optionsContainer.removeAttribute('data-answered');
 
-  // Update Progress
-  elements.progressText.textContent = `Question ${current}/${total}`;
-  elements.progressBar.style.width = `${(current / total) * 100}%`;
+            const labels = ["A", "B", "C", "D"];
+            
+            qObj.opts.forEach((optText, i) => {
+                const optEl = document.createElement('div');
+                optEl.className = 'option-card';
+                
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'opt-label';
+                labelSpan.textContent = labels[i];
+                
+                const textSpan = document.createElement('span');
+                textSpan.textContent = optText;
+                
+                optEl.appendChild(labelSpan);
+                optEl.appendChild(textSpan);
+                
+                optEl.onclick = () => handleAnswer(i, optEl, qObj.ans);
+                optionsContainer.appendChild(optEl);
+            });
+        }
 
-  // Update Text
-  elements.questionText.textContent = question.question;
-  elements.optionsContainer.innerHTML = '';
-  elements.nextBtn.classList.add('hidden');
+        function handleAnswer(selectedIndex, optEl, correctIdx) {
+            const container = document.getElementById('engine-options');
+            
+            const allOpts = Array.from(container.children);
+            allOpts.forEach(el => el.classList.remove('selected'));
+            optEl.classList.add('selected');
+            
+            quizState.questions[quizState.currIdx].userAns = selectedIndex;
 
-  // Render Options
-  question.options.forEach((optionText, index) => {
-    const optionEl = document.createElement('div');
-    optionEl.className = 'option';
-    
-    const textSpan = document.createElement('span');
-    textSpan.textContent = optionText;
-    
-    const indicatorSpan = document.createElement('span');
-    indicatorSpan.className = 'indicator';
-    
-    optionEl.appendChild(textSpan);
-    optionEl.appendChild(indicatorSpan);
-    
-    optionEl.addEventListener('click', () => handleOptionSelect(index, optionEl));
-    elements.optionsContainer.appendChild(optionEl);
-  });
-}
+            document.getElementById('engine-status').textContent = `Option Selected`;
+            document.getElementById('engine-next').disabled = false;
+        }
 
-// Handle answer selection
-function handleOptionSelect(selectedIndex, optionElement) {
-  // Prevent selecting multiple options
-  if (elements.optionsContainer.classList.contains('answered')) return;
-  elements.optionsContainer.classList.add('answered');
+        function nextQuestion(skipped = false) {
+            const qObj = quizState.questions[quizState.currIdx];
+            
+            if(skipped) {
+                quizState.wrong++;
+            } else {
+                if (qObj.userAns === qObj.ans) {
+                    quizState.correct++;
+                } else {
+                    quizState.wrong++;
+                }
+            }
 
-  const question = currentState.questions[currentState.currentQuestionIndex];
-  const isCorrect = selectedIndex === question.answer;
+            quizState.currIdx++;
+            if(quizState.currIdx < quizState.questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
 
-  const allOptions = Array.from(elements.optionsContainer.children);
-  
-  // Disable all options
-  allOptions.forEach(opt => opt.classList.add('disabled'));
+        function showResults() {
+            clearInterval(quizState.timer);
+            switchPracticeView('result');
+            
+            const total = quizState.questions.length;
+            const perc = Math.round((quizState.correct / total) * 100);
+            
+            const m = Math.floor(quizState.timeElapsed / 60).toString().padStart(2, '0');
+            const s = (quizState.timeElapsed % 60).toString().padStart(2, '0');
+            const timeStr = `${m}:${s}`;
 
-  // Mark correct/incorrect
-  if (isCorrect) {
-    currentState.score++;
-    optionElement.classList.add('correct');
-    optionElement.querySelector('.indicator').textContent = '✓';
-  } else {
-    optionElement.classList.add('incorrect');
-    optionElement.querySelector('.indicator').textContent = '✗';
-    // Highlight the correct one
-    const correctOption = allOptions[question.answer];
-    correctOption.classList.add('correct');
-    correctOption.querySelector('.indicator').textContent = '✓';
-  }
+            document.getElementById('result-score').textContent = `${perc}%`;
+            document.getElementById('res-total').textContent = total;
+            document.getElementById('res-correct').textContent = quizState.correct;
+            document.getElementById('res-wrong').textContent = quizState.wrong;
+            document.getElementById('res-time').textContent = timeStr;
+            
+            // Add a mock row to history
+            const tbody = document.querySelector('.history-table tbody');
+            const row = document.createElement('tr');
+            const modeScoreClass = perc > 70 ? 'score-good' : (perc > 50 ? 'score-avg' : 'score-bad');
+            
+            row.innerHTML = `
+                <td>${document.getElementById('setup-subject').value}</td>
+                <td>${total}</td>
+                <td><span class="score-badge ${modeScoreClass}">${perc}%</span></td>
+                <td>${timeStr}</td>
+                <td>Just Now</td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+        }
 
-  // Show Next Button
-  elements.nextBtn.classList.remove('hidden');
-}
+        function resetPractice() {
+            switchPracticeView('setup');
+            window.scrollTo(0,0);
+        }
 
-// Handle "Next" click
-function handleNextQuestion() {
-  elements.optionsContainer.classList.remove('answered');
-  currentState.currentQuestionIndex++;
+        // ======================= CONTACT FORM =======================
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            e.target.reset();
+            showToast("Success! Your message was sent.");
+        }
 
-  if (currentState.currentQuestionIndex < currentState.questions.length) {
-    renderQuestion();
-  } else {
-    showResult();
-  }
-}
+        // ======================= TOAST UI & THEME =======================
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
 
-// Show Result View
-function showResult() {
-  elements.finalScore.textContent = currentState.score;
-  elements.totalQuestions.textContent = currentState.questions.length;
-  switchView('result');
-}
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('theme-btn').textContent = isLight ? "🌙" : "☀️";
+        }
 
-// Boot application
-init();
+        // Bootsrap Application
+        window.onload = function() {
+            initHome();
+            initPractice();
+            showPage('home'); // Entry Point
+        }
