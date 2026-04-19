@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBSQUIZ - Build Your Knowledge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #E24B4A;
+            --primary-red-hover: #c93b3a;
+            --bg-black: #1a1a1a;
+            --bg-darker: #111111;
+            --bg-card: #262626;
+            --text-main: #f5f5f5;
+            --text-muted: #a3a3a3;
+            --border-light: #333333;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --heading-color: #ffffff;
+        }
+
+        body.light-mode {
+            --bg-black: #f3f4f6;
+            --bg-darker: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #374151;
+            --text-muted: #6b7280;
+            --border-light: #e5e7eb;
+            --heading-color: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- TYPOGRAPHY & UTILS --- */
+        h1, h2, h3, h4 { color: var(--heading-color); }
+        .text-red { color: var(--primary-red); }
+        .text-muted { color: var(--text-muted); }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-red-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border-light);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+            transform: translateY(-2px);
+        }
+
+        .badge {
+            background: rgba(226, 75, 74, 0.15);
+            color: var(--primary-red);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 50%;
+            height: 3px;
+            background-color: var(--primary-red);
+        }
+
+        .grid-auto {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Hover animations for cards */
+        .hover-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .hover-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary-red) !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        /* --- NAVBAR --- */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .logo .icon {
+            background: linear-gradient(135deg, var(--primary-red), #ff7b7b);
+            color: white;
+            padding: 0 8px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(226, 75, 74, 0.3);
+        }
+
+        .logo-text {
+            background: linear-gradient(to right, white, #e2e2e2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-red);
+        }
+
+        /* --- MAIN ROUTER --- */
+        main {
+            flex-grow: 1;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+            padding: 3rem 5%;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- HOME PAGE --- */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 70vh;
+            background: radial-gradient(circle at center, rgba(226, 75, 74, 0.15) 0%, var(--bg-black) 60%);
+            padding: 4rem 1rem;
+            flex-direction: column;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin: 1.5rem 0;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat-item h3 {
+            font-size: 2rem;
+            color: var(--primary-red);
+        }
+        
+        .stat-item p { margin: 0; font-size: 0.9rem; }
+
+        /* Subjects Filter */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+            color: white;
+        }
+
+        .subject-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .subject-card .icon {
+            font-size: 2rem;
+        }
+
+        .subject-card .details h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .subject-card .badge-hot {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-red);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Works & Features */
+        .works-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .step-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-light);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            text-align: center;
+        }
+
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-red);
+            border-radius: 50%;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border-top: 4px solid var(--primary-red);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+        }
+
+        /* --- ABOUT PAGE --- */
+        .about-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .about-panel {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-darker));
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .about-panel::before {
+            content: '?';
+            font-size: 15rem;
+            position: absolute;
+            color: rgba(255,255,255,0.02);
+            font-weight: 800;
+        }
+
+        .checklist {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .checklist li {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .checklist li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--primary-red);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* --- DASHBOARD --- */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            height: fit-content;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--primary-red);
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+        }
+
+        .stat-list {
+            text-align: left;
+            margin-top: 2rem;
+            list-style: none;
+        }
+
+        .stat-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.95rem;
+        }
+
+        .progress-item {
+            margin-bottom: 1rem;
+        }
+        
+        .progress-item .meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary-red);
+            border-radius: 4px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .history-table th, .history-table td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .history-table th { background: var(--bg-darker); }
+
+        .score-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .score-good { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .score-avg { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .score-bad { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* --- PRACTICE PAGE --- */
+        .practice-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .setup-card, .quiz-card, .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-light);
+            color: white;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer {
+            font-family: monospace;
+            font-size: 1.25rem;
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+
+        .quiz-progress {
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 3px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: var(--primary-red);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-card {
+            background: var(--bg-darker);
+            border: 2px solid var(--border-light);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s;
+        }
+
+        .option-card:hover:not(.disabled) {
+            border-color: var(--primary-red);
+            background: #2a2a2a;
+        }
+        
+        .option-card.correct {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .option-card.wrong {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .option-card.selected {
+            border-color: var(--primary-red);
+            background: rgba(226, 75, 74, 0.1);
+        }
+
+        .option-card.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .opt-label {
+            background: var(--border-light);
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .option-card.correct .opt-label { background: var(--success); color: var(--bg-black); }
+        .option-card.wrong .opt-label { background: var(--danger); color: white; }
+
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-light);
+            padding-top: 1.5rem;
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .result-score {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--primary-red);
+            margin: 1rem 0;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* --- CONTACT PAGE --- */
+        .contact-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .contact-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .contact-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+        }
+
+        .social-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .social-btn {
+            width: 40px; height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .social-btn:hover { background: var(--primary-red); border-color: var(--primary-red); }
+
+        /* --- FOOTER --- */
+        footer {
+            background: var(--bg-darker);
+            border-top: 1px solid var(--border-light);
+            padding: 4rem 5% 2rem;
+            margin-top: auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-col h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col li { margin-bottom: 0.75rem; }
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-col a:hover { color: var(--primary-red); }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-light);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- THEME TOGGLE & TOAST --- */
+        .theme-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+        }
+
+        #toast-container {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary-red);
+            color: white;
+            padding: 1rem 1.5rem;
+            margin-top: 10px;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease forwards;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .about-layout, .dashboard-layout, .contact-layout { grid-template-columns: 1fr; }
+            .nav-links { display: none; /* simple mobile view */ }
+            .hero h1 { font-size: 2.5rem; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="logo" onclick="showPage('home')">
+            <span class="icon">KBS</span> <span class="logo-text">KBSQUIZ</span>
+        </div>
+        <ul class="nav-links">
+            <li><a onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+            <li><a onclick="showPage('about')" id="nav-about">About</a></li>
+            <li><a onclick="showPage('practice')" id="nav-practice">Practice</a></li>
+            <li><a onclick="showPage('dashboard')" id="nav-dashboard">Dashboard</a></li>
+            <li><a onclick="showPage('contact')" id="nav-contact">Contact</a></li>
+        </ul>
+        <button class="btn btn-outline" onclick="showToast('Login functionality is mocked.')">Login</button>
+    </nav>
+
+    <!-- CONTENT ROUTER -->
+    <main id="app-container">
+        
+        <!-- ================= HOME PAGE ================= -->
+        <section id="page-home" class="page active">
+            <div class="hero">
+                <span class="badge" id="badge-subjects">35+ Subjects</span>
+                <h1>Master Any Subject.<br>Test Your Limits.</h1>
+                <p>The ultimate static-frontend platform packed with multiple choice questions across Programming Languages, Frameworks, Developer Tools, and Aptitude.</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="showPage('practice')">Start Practice</button>
+                    <button class="btn btn-outline" onclick="showPage('dashboard')">View Dashboard</button>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="stat-item"><h3 id="stat-subjects">35+</h3><p>Subjects</p></div>
+                    <div class="stat-item"><h3>1000+</h3><p>Total Questions</p></div>
+                    <div class="stat-item"><h3>5</h3><p>Learners</p></div>
+                    <div class="stat-item"><h3>98%</h3><p>Satisfaction</p></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 5rem;" id="subjects-section">
+                <h2 class="section-title">Explore Subjects</h2>
+                <div class="filters" id="subject-filters">
+                    <!-- Filters generated by JS -->
+                </div>
+                <div class="grid-auto" id="subjects-grid">
+                    <!-- Cards generated by JS -->
+                </div>
+            </div>
+
+            <div style="margin-top: 5rem;">
+                <h2 class="section-title">How It Works</h2>
+                <div class="works-steps">
+                    <div class="step-card">
+                        <div class="step-num">1</div>
+                        <h3>Choose Subject</h3>
+                        <p class="text-muted" style="margin-top:0.5rem">Select from exactly 50 available topics.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">2</div>
+                        <h3>Set Parameters</h3>
+                        <p class="text-muted" style="margin-top:0.5rem">Pick your mode, questions count & difficulty.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">3</div>
+                        <h3>Take Test</h3>
+                        <p class="text-muted" style="margin-top:0.5rem">Solve MCQs and check correct answers instantly.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">4</div>
+                        <h3>View Results</h3>
+                        <p class="text-muted" style="margin-top:0.5rem">Analyze your final score and review progress.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 5rem;">
+                <h2 class="section-title">Platform Features</h2>
+                <div class="grid-auto">
+                    <div class="feature-card">
+                        <h3 class="text-red">Static & Fast</h3>
+                        <p class="text-muted">Zero loading screens. Pure Javascript single-page app structure.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="text-red">Instant Validation</h3>
+                        <p class="text-muted">Green and red feedback the exact moment you click an option.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="text-red">Mock Timers</h3>
+                        <p class="text-muted">Simulate real exam pressure with a responsive countdown interval timer.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="text-red">Massive Scope</h3>
+                        <p class="text-muted">Fifty complete subjects properly categorised to test any discipline.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="text-red">Analytics</h3>
+                        <p class="text-muted">A dedicated dashboard to view your (mocked) stats and history.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="text-red">Routing</h3>
+                        <p class="text-muted">A fully custom JS-based virtual page router inside one HTML file.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ABOUT PAGE ================= -->
+        <section id="page-about" class="page">
+            <h2 class="section-title">About QuizPro</h2>
+            <div class="about-layout">
+                <div class="about-panel">
+                    <!-- Decor element via CSS -->
+                </div>
+                <div>
+                    <h3>Our Mission to Simplify Testing</h3>
+                    <p class="text-muted" style="margin: 1rem 0; line-height: 1.6;">
+                        QuizPro is built entirely using vanilla web technologies. The absence of heavyweight frameworks guarantees maximum execution speed inside your browser. 
+                    </p>
+                    <p class="text-muted" style="margin: 1rem 0; line-height: 1.6;">
+                        Our focus is on presenting a beautiful, engaging environment for users to quickly hop in and validate their knowledge without registration walls or frustrating loaders.
+                    </p>
+                    <ul class="checklist">
+                        <li>Entirely client-side execution</li>
+                        <li>50 Unique Subjects ranging from Arts to AI</li>
+                        <li>Built with HTML, CSS, and Vanilla Javascript</li>
+                        <li>Strict Black & Red aesthetic theme</li>
+                        <li>100% free with no login forced</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DASHBOARD PAGE ================= -->
+        <section id="page-dashboard" class="page">
+            <h2 class="section-title">My Dashboard</h2>
+            <div class="dashboard-layout">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="avatar">BS</div>
+                    <h3>Bablu Sarkar</h3>
+                    <p class="text-muted">bablu.devs.ai@gmail.com</p>
+                    
+                    <ul class="stat-list">
+                        <li><span class="text-muted">Member since</span> <strong>Jan 2026</strong></li>
+                        <li><span class="text-muted">Total Tests</span> <strong>42</strong></li>
+                        <li><span class="text-muted">Avg Score</span> <strong>85%</strong></li>
+                        <li><span class="text-muted">Best Subject</span> <strong>React</strong></li>
+                        <li><span class="text-muted">Global Rank</span> <strong>#1,409</strong></li>
+                        <li><span class="text-muted">Day Streak</span> <strong>🔥 5 Days</strong></li>
+                    </ul>
+                    <button class="btn btn-primary" style="width:100%; margin-top:2rem;" onclick="showPage('practice')">New Test Start Karo</button>
+                </div>
+                
+                <!-- Main Board -->
+                <div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:2rem;">
+                        <div class="feature-card" style="text-align:center;">
+                            <h3 style="font-size: 2.5rem; color:var(--primary-red);">42</h3>
+                            <p class="text-muted">Tests Diye</p>
+                        </div>
+                        <div class="feature-card" style="text-align:center;">
+                            <h3 style="font-size: 2.5rem; color:var(--primary-red);">840</h3>
+                            <p class="text-muted">Questions Solve</p>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bars -->
+                    <div class="feature-card" style="border-top:none;">
+                        <h3 style="margin-bottom:1.5rem;">Subject Proficiency</h3>
+                        <div class="progress-item">
+                            <div class="meta"><span>Computer Science</span> <span>90%</span></div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 90%;"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="meta"><span>Mathematics</span> <span>75%</span></div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 75%;"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="meta"><span>Physics</span> <span>60%</span></div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 60%;"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="meta"><span>General Knowledge</span> <span>85%</span></div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 85%;"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="meta"><span>History</span> <span>45%</span></div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 45%;"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- History Table -->
+                    <div style="margin-top: 2rem;">
+                        <h3>Recent Test History</h3>
+                        <div style="overflow-x:auto;">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Questions</th>
+                                        <th>Score</th>
+                                        <th>Time Taken</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Computer Science</td>
+                                        <td>20</td>
+                                        <td><span class="score-badge score-good">95%</span></td>
+                                        <td>12:05</td>
+                                        <td>Today</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mathematics</td>
+                                        <td>10</td>
+                                        <td><span class="score-badge score-avg">60%</span></td>
+                                        <td>08:30</td>
+                                        <td>Yesterday</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Physics</td>
+                                        <td>20</td>
+                                        <td><span class="score-badge score-bad">45%</span></td>
+                                        <td>18:45</td>
+                                        <td>2 days ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td>General Knowledge</td>
+                                        <td>30</td>
+                                        <td><span class="score-badge score-good">86%</span></td>
+                                        <td>22:10</td>
+                                        <td>3 days ago</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PRACTICE PAGE ================= -->
+        <section id="page-practice" class="page">
+            <div class="practice-container">
+                
+                <!-- Setup Screen -->
+                <div id="practice-setup" class="setup-card">
+                    <h2 class="section-title" style="margin-bottom:1rem;">Practice Setup</h2>
+                    <p class="text-muted" style="margin-bottom:2rem;">Configure your test parameters before starting.</p>
+                    
+                    <div class="form-group">
+                        <label>Select Subject</label>
+                        <select id="setup-subject" class="form-control">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mode</label>
+                        <select id="setup-mode" class="form-control">
+                            <option value="Practice">Practice (Stopwatch)</option>
+                            <option value="Timed">Timed (1 Min per Question)</option>
+                            <option value="Mock">Mock Exam (Strict Limit)</option>
+                        </select>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label>Questions</label>
+                            <select id="setup-count" class="form-control">
+                                <option>5</option>
+                                <option>10</option>
+                                <option>20</option>
+                                <option selected>25</option>
+                                <option>30</option>
+                                <option>50</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Difficulty</label>
+                            <select class="form-control">
+                                <option>Mixed</option>
+                                <option>Easy</option>
+                                <option>Medium</option>
+                                <option>Hard</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" style="width:100%; margin-top:1rem;" onclick="startQuiz()">Start Attempt</button>
+                </div>
+
+                <!-- Quiz Engine View -->
+                <div id="practice-engine" class="quiz-card" style="display:none;">
+                    <div class="quiz-header">
+                        <div>
+                            <h3 id="engine-subject">Subject Name</h3>
+                            <span id="engine-counter" class="text-muted">Question 1/X</span>
+                        </div>
+                        <div class="timer" id="engine-timer">Practice Mode</div>
+                    </div>
+                    
+                    <div class="quiz-progress">
+                        <div id="engine-bar" class="quiz-progress-fill"></div>
+                    </div>
+
+                    <div id="engine-question" class="question-text">
+                        Question text goes here?
+                    </div>
+
+                    <div id="engine-options" class="options-grid">
+                        <!-- Options injected by JS -->
+                    </div>
+
+                    <div class="quiz-footer">
+                        <span id="engine-status" class="text-muted">Correct: 0 | Wrong: 0</span>
+                        <div>
+                            <button id="engine-skip" class="btn btn-outline" style="margin-right:0.5rem;" onclick="nextQuestion(true)">Skip</button>
+                            <button id="engine-next" class="btn btn-primary" onclick="nextQuestion()" disabled>Next Question</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results View -->
+                <div id="practice-result" class="result-card" style="display:none;">
+                    <div style="font-size: 5rem; margin-bottom:1rem;">🏆</div>
+                    <h2>Test Completed!</h2>
+                    <div id="result-score" class="result-score">80%</div>
+                    
+                    <div class="stats-row">
+                        <div>
+                            <h4 class="text-muted">Total</h4>
+                            <p style="font-size:1.5rem; font-weight:bold;" id="res-total">10</p>
+                        </div>
+                        <div>
+                            <h4 class="text-muted">Correct</h4>
+                            <p style="font-size:1.5rem; font-weight:bold; color:var(--success);" id="res-correct">8</p>
+                        </div>
+                        <div>
+                            <h4 class="text-muted">Wrong/Skipped</h4>
+                            <p style="font-size:1.5rem; font-weight:bold; color:var(--danger);" id="res-wrong">2</p>
+                        </div>
+                        <div>
+                            <h4 class="text-muted">Time Taken</h4>
+                            <p style="font-size:1.5rem; font-weight:bold; color:#3b82f6;" id="res-time">00:00</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:center; gap:1rem;">
+                        <button class="btn btn-primary" onclick="resetPractice()">Dobara Try Karo</button>
+                        <button class="btn btn-outline" onclick="showPage('dashboard')">Dashboard Dekho</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= CONTACT PAGE ================= -->
+        <section id="page-contact" class="page">
+            <h2 class="section-title">Get in Touch</h2>
+            <div class="contact-layout">
+                <div>
+                    <div class="contact-info-grid">
+                        <div class="contact-card">
+                            <h4 class="text-red">Email</h4>
+                            <p class="text-muted" style="margin-top:0.5rem">hello@kbsquiz.com</p>
+                        </div>
+                        <div class="contact-card">
+                            <h4 class="text-red">Phone</h4>
+                            <p class="text-muted" style="margin-top:0.5rem">+91 98765 43210</p>
+                        </div>
+                        <div class="contact-card" style="grid-column: span 2;">
+                            <h4 class="text-red">Address</h4>
+                            <p class="text-muted" style="margin-top:0.5rem">Sector 62, Cyber City, Tech Park, Gurugram, India 122001</p>
+                        </div>
+                    </div>
+                    
+                    <h4>Follow Us</h4>
+                    <div class="social-row" style="margin-top: 1rem;">
+                        <a href="https://www.facebook.com/ji.sarkar.ji.420153/" target="_blank" class="social-btn" style="text-decoration: none; color: inherit;" title="Facebook">F</a>
+                        <a href="https://www.linkedin.com/in/bablu-sarkar-5a48b7282/" target="_blank" class="social-btn" style="text-decoration: none; color: inherit;" title="LinkedIn">IN</a>
+                        <a href="https://github.com/bablukumar-" target="_blank" class="social-btn" style="text-decoration: none; color: inherit;" title="GitHub">GH</a>
+                    </div>
+                </div>
+
+                <div class="feature-card" style="border-top-color:var(--border-light);">
+                    <form onsubmit="handleContactSubmit(event)">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" required class="form-control" placeholder="Rahul Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" required class="form-control" placeholder="rahul@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" required class="form-control" placeholder="Reporting an issue...">
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea rows="4" required class="form-control" placeholder="Your message here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="logo" style="margin-bottom:1rem;">
+                    <span class="icon">KBS</span> <span class="logo-text">KBSQUIZ</span>
+                </div>
+                <p class="text-muted" style="font-size:0.9rem; line-height:1.5;">Built to redefine the online MCQ testing experience using static vanilla technologies. Fast, reliable, and completely local.</p>
+                <div class="social-row" style="margin-top: 1.5rem;">
+                    <a href="https://www.facebook.com/ji.sarkar.ji.420153/" target="_blank" class="social-btn" style="text-decoration: none; color: inherit;" title="Facebook">F</a>
+                    <a href="https://www.linkedin.com/in/bablu-sarkar-5a48b7282/" target="_blank" class="social-btn" style="text-decoration: none; color: inherit;" title="LinkedIn">IN</a>
+                    <a href="https://github.com/bablukumar-" target="_blank" class="social-btn" style="text-decoration: none; color: inherit;" title="GitHub">GH</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a onclick="showPage('home')">Home</a></li>
+                    <li><a onclick="showPage('about')">About Platform</a></li>
+                    <li><a onclick="showPage('dashboard')">Dashboard</a></li>
+                    <li><a onclick="showPage('contact')">Reach Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Top Categories</h4>
+                <ul>
+                    <li><a onclick="showPage('home'); filterGrid('Language')">Language</a></li>
+                    <li><a onclick="showPage('home'); filterGrid('Framework')">Framework</a></li>
+                    <li><a onclick="showPage('home'); filterGrid('Tool')">Tool</a></li>
+                    <li><a onclick="showPage('home'); filterGrid('Aptitude')">Aptitude</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a onclick="showToast('Privacy Policy accessed')">Privacy Policy</a></li>
+                    <li><a onclick="showToast('TOS accessed')">Terms of Service</a></li>
+                    <li><a onclick="showToast('Cookie Policy accessed')">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 KBSQUIZ built natively. All rights reserved. No databases harmed.
+        </div>
+    </footer>
+
+    <!-- THEME TOGGLE -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle Light/Dark Mode">☀️</button>
+
+    <!-- TOASTS -->
+    <div id="toast-container"></div>
+
+    <script>
+        // ======================= STATIC DATABASE =======================
+        const categories = ["All", "Language", "Framework", "Tool", "Aptitude", "English"];
+        
+        const rawSubjects = [
+            // Language
+            {cat:"Language", name:"JavaScript", icon:"🟨"}, {cat:"Language", name:"Python", icon:"🐍"},
+            {cat:"Language", name:"Java", icon:"☕"}, {cat:"Language", name:"C++", icon:"⚙️"},
+            {cat:"Language", name:"C#", icon:"🎯"}, {cat:"Language", name:"TypeScript", icon:"📘"},
+            {cat:"Language", name:"Go", icon:"🐹"}, {cat:"Language", name:"Rust", icon:"🦀"},
+            {cat:"Language", name:"Ruby", icon:"💎"}, {cat:"Language", name:"PHP", icon:"🐘"},
+            {cat:"Language", name:"Swift", icon:"🍎"}, {cat:"Language", name:"Kotlin", icon:"🟣"},
+            // Framework
+            {cat:"Framework", name:"React", icon:"⚛️"}, {cat:"Framework", name:"Angular", icon:"🅰️"},
+            {cat:"Framework", name:"Vue.js", icon:"🟩"}, {cat:"Framework", name:"Node.js", icon:"🟢"},
+            {cat:"Framework", name:"Django", icon:"🎸"}, {cat:"Framework", name:"Spring Boot", icon:"🍃"},
+            {cat:"Framework", name:"Next.js", icon:"⏭️"}, {cat:"Framework", name:"Express", icon:"🚂"},
+            {cat:"Framework", name:"Laravel", icon:"🧱"}, {cat:"Framework", name:"Flutter", icon:"🦋"},
+            // Tool
+            {cat:"Tool", name:"Git", icon:"🔀"}, {cat:"Tool", name:"Docker", icon:"🐋"},
+            {cat:"Tool", name:"Kubernetes", icon:"☸️"}, {cat:"Tool", name:"Jenkins", icon:"☕️"},
+            {cat:"Tool", name:"AWS", icon:"☁️"}, {cat:"Tool", name:"Linux", icon:"🐧"},
+            {cat:"Tool", name:"SQL", icon:"🗄️"}, {cat:"Tool", name:"MongoDB", icon:"🍃"},
+            {cat:"Tool", name:"Redis", icon:"🟥"},
+            // Aptitude
+            {cat:"Aptitude", name:"Quantitative Aptitude", icon:"📈"}, {cat:"Aptitude", name:"Logical Reasoning", icon:"🧩"},
+            {cat:"Aptitude", name:"Data Interpretation", icon:"📊"}, {cat:"Aptitude", name:"Verbal Reasoning", icon:"🗣️"},
+            // English
+            {cat:"English", name:"Grammar", icon:"📝"}, {cat:"English", name:"Vocabulary", icon:"📖"},
+            {cat:"English", name:"Reading Comprehension", icon:"👁️"}, {cat:"English", name:"Communications", icon:"💬"}
+        ];
+
+        // Fallback Question Bank
+        const fallbackQuestions = [
+            { q: "What is the primary function of this subject concept?", opts: ["Core Analysis", "Basic Process", "Advanced Execution", "Random Data"], ans: 1 },
+            { q: "Which tool is commonly associated with this field?", opts: ["Scalpel", "Compass", "Algorithm", "Standard Metric"], ans: 3 },
+            { q: "When was the major breakthrough in this domain achieved?", opts: ["1920", "1995", "2005", "1850"], ans: 1 },
+            { q: "What is the standard unit of measurement here?", opts: ["Bytes", "Meters", "Units", "Degrees"], ans: 2 },
+            { q: "Identify the incorrect statement.", opts: ["A is true", "B is false but accepted", "C is entirely false", "D is correct"], ans: 2 },
+            { q: "What is a major challenge in this area?", opts: ["Speed", "Scalability", "Complexity", "All of the above"], ans: 3 },
+            { q: "Who is considered a pioneer in this field?", opts: ["Newton", "Turing", "Edison", "Smith"], ans: 0 },
+            { q: "Which format is widely used?", opts: ["Format X", "Format Y", "Format Z", "None of these"], ans: 0 }
+        ];
+
+        // Specific sample questions for Computer/Web Dev to show uniqueness if needed, otherwise fallback.
+        const specificQuestions = {
+            "Web Development": [
+                { q: "What does HTML stand for?", opts: ["Hyper Text Markup Language", "Hyperlinks and Text", "Home Tool Markup", "none"], ans: 0 },
+                { q: "What does CSS stand for?", opts: ["Computer Style", "Cascading Style Sheets", "Creative Style", "Colorful Style"], ans: 1 },
+                { q: "Choose the correct HTML tag for the largest heading:", opts: ["<heading>", "<h6>", "<head>", "<h1>"], ans: 3 },
+                { q: "Inside which HTML element do we put the JavaScript?", opts: ["<script>", "<javascript>", "<js>", "<scripting>"], ans: 0 },
+                { q: "How do you write 'Hello World' in an alert box?", opts: ["msg('Hello')", "alertBox('Hello')", "alert('Hello World')", "msgBox()"], ans: 2 }
+            ]
+        }
+
+        // ======================= APP LOGIC =======================
+
+        // Router
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            // Nav Highlighting
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            const navLink = document.getElementById('nav-' + pageId);
+            if(navLink) navLink.classList.add('active');
+            
+            window.scrollTo(0,0);
+        }
+
+        // Home Page Generator
+        function initHome() {
+            document.getElementById('stat-subjects').textContent = rawSubjects.length;
+            document.getElementById('badge-subjects').textContent = rawSubjects.length + " Subjects";
+
+            const filtersEl = document.getElementById('subject-filters');
+            filtersEl.innerHTML = '';
+            categories.forEach(cat => {
+                const b = document.createElement('button');
+                b.className = 'filter-btn' + (cat === 'All' ? ' active' : '');
+                b.textContent = cat;
+                b.onclick = () => filterGrid(cat, b);
+                filtersEl.appendChild(b);
+            });
+            filterGrid('All');
+        }
+
+        function filterGrid(cat, btnEl = null) {
+            if(btnEl) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btnEl.classList.add('active');
+            } else {
+                // If triggered via footer link
+                Array.from(document.querySelectorAll('.filter-btn')).forEach(b => {
+                    if(b.textContent === cat) b.classList.add('active');
+                    else b.classList.remove('active');
+                });
+            }
+
+            const grid = document.getElementById('subjects-grid');
+            grid.innerHTML = '';
+            
+            const filtered = cat === 'All' ? rawSubjects : rawSubjects.filter(s => s.cat === cat);
+            
+            filtered.forEach((sub, i) => {
+                const card = document.createElement('div');
+                card.className = 'subject-card hover-card';
+                card.onclick = () => jumpToPractice(sub.name);
+                
+                // Add hot badge to first few
+                const badge = (i%7===0) ? '<span class="badge-hot">HOT</span>' : '';
+                
+                card.innerHTML = `
+                    ${badge}
+                    <div class="icon">${sub.icon}</div>
+                    <div class="details">
+                        <h4>${sub.name}</h4>
+                        <p class="text-muted" style="font-size:0.8rem;">${Math.floor(Math.random()*500 + 100)} Questions</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function jumpToPractice(subjectName) {
+            showPage('practice');
+            const select = document.getElementById('setup-subject');
+            for(let i=0; i<select.options.length; i++){
+                if(select.options[i].value === subjectName) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Practice Setup Population
+        function initPractice() {
+            const select = document.getElementById('setup-subject');
+            select.innerHTML = '';
+            rawSubjects.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name; opt.textContent = s.name;
+                select.appendChild(opt);
+            });
+        }
+
+        // ======================= QUIZ ENGINE =======================
+        let quizState = {
+            questions: [],
+            currIdx: 0,
+            correct: 0,
+            wrong: 0,
+            timer: null,
+            timeRem: 1800,
+            timeElapsed: 0
+        };
+
+        const engineViews = {
+            setup: document.getElementById('practice-setup'),
+            quiz: document.getElementById('practice-engine'),
+            result: document.getElementById('practice-result')
+        };
+
+        function switchPracticeView(viewName) {
+            engineViews.setup.style.display = 'none';
+            engineViews.quiz.style.display = 'none';
+            engineViews.result.style.display = 'none';
+            engineViews[viewName].style.display = 'block';
+        }
+
+        function startQuiz() {
+            const subject = document.getElementById('setup-subject').value;
+            const mode = document.getElementById('setup-mode').value;
+            let qCount = parseInt(document.getElementById('setup-count').value);
+            
+            // Build Question Array
+            let pool = specificQuestions[subject] ? [...specificQuestions[subject]] : [...fallbackQuestions];
+            pool.sort(() => Math.random() - 0.5); // shuffle
+            
+            // Generate extra mocked questions if requested count > pool
+            while(pool.length < qCount) {
+                pool.push({
+                    q: `Advanced mocked question regarding ${subject} - Segment ${pool.length}`,
+                    opts: ["Alpha", "Beta", "Gamma", "Delta"],
+                    ans: Math.floor(Math.random() * 4)
+                });
+            }
+            
+            quizState.questions = pool.slice(0, qCount);
+            quizState.currIdx = 0;
+            quizState.correct = 0;
+            quizState.wrong = 0;
+            quizState.timeElapsed = 0;
+
+            document.getElementById('engine-subject').textContent = subject;
+            
+            // Timer logic
+            clearInterval(quizState.timer);
+            if(mode === 'Practice') {
+                document.getElementById('engine-timer').textContent = "⏳ 00:00";
+                quizState.timer = setInterval(() => {
+                    quizState.timeElapsed++;
+                    const m = Math.floor(quizState.timeElapsed / 60).toString().padStart(2, '0');
+                    const s = (quizState.timeElapsed % 60).toString().padStart(2, '0');
+                    document.getElementById('engine-timer').textContent = `⏳ ${m}:${s}`;
+                }, 1000);
+            } else {
+                quizState.timeRem = qCount * 60; // 1 min per question
+                updateTimerUI();
+                quizState.timer = setInterval(() => {
+                    quizState.timeRem--;
+                    quizState.timeElapsed++;
+                    updateTimerUI();
+                    if(quizState.timeRem <= 0) {
+                        clearInterval(quizState.timer);
+                        showResults();
+                        showToast("Time's Up!");
+                    }
+                }, 1000);
+            }
+
+            switchPracticeView('quiz');
+            renderQuestion();
+            showToast(`${mode} Test Started!`);
+        }
+
+        function updateTimerUI() {
+            const m = Math.floor(quizState.timeRem / 60).toString().padStart(2, '0');
+            const s = (quizState.timeRem % 60).toString().padStart(2, '0');
+            document.getElementById('engine-timer').textContent = `⏳ ${m}:${s}`;
+        }
+
+        function renderQuestion() {
+            const qObj = quizState.questions[quizState.currIdx];
+            const total = quizState.questions.length;
+            const current = quizState.currIdx + 1;
+
+            document.getElementById('engine-counter').textContent = `Question ${current}/${total}`;
+            document.getElementById('engine-bar').style.width = `${(current/total)*100}%`;
+            
+            document.getElementById('engine-question').textContent = qObj.q;
+            document.getElementById('engine-status').textContent = `Pending Answers`;
+            
+            const btnNext = document.getElementById('engine-next');
+            btnNext.disabled = true;
+            btnNext.textContent = current === total ? "Submit Test" : "Next Question";
+
+            const optionsContainer = document.getElementById('engine-options');
+            optionsContainer.innerHTML = '';
+            optionsContainer.removeAttribute('data-answered');
+
+            const labels = ["A", "B", "C", "D"];
+            
+            qObj.opts.forEach((optText, i) => {
+                const optEl = document.createElement('div');
+                optEl.className = 'option-card';
+                
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'opt-label';
+                labelSpan.textContent = labels[i];
+                
+                const textSpan = document.createElement('span');
+                textSpan.textContent = optText;
+                
+                optEl.appendChild(labelSpan);
+                optEl.appendChild(textSpan);
+                
+                optEl.onclick = () => handleAnswer(i, optEl, qObj.ans);
+                optionsContainer.appendChild(optEl);
+            });
+        }
+
+        function handleAnswer(selectedIndex, optEl, correctIdx) {
+            const container = document.getElementById('engine-options');
+            
+            const allOpts = Array.from(container.children);
+            allOpts.forEach(el => el.classList.remove('selected'));
+            optEl.classList.add('selected');
+            
+            quizState.questions[quizState.currIdx].userAns = selectedIndex;
+
+            document.getElementById('engine-status').textContent = `Option Selected`;
+            document.getElementById('engine-next').disabled = false;
+        }
+
+        function nextQuestion(skipped = false) {
+            const qObj = quizState.questions[quizState.currIdx];
+            
+            if(skipped) {
+                quizState.wrong++;
+            } else {
+                if (qObj.userAns === qObj.ans) {
+                    quizState.correct++;
+                } else {
+                    quizState.wrong++;
+                }
+            }
+
+            quizState.currIdx++;
+            if(quizState.currIdx < quizState.questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            clearInterval(quizState.timer);
+            switchPracticeView('result');
+            
+            const total = quizState.questions.length;
+            const perc = Math.round((quizState.correct / total) * 100);
+            
+            const m = Math.floor(quizState.timeElapsed / 60).toString().padStart(2, '0');
+            const s = (quizState.timeElapsed % 60).toString().padStart(2, '0');
+            const timeStr = `${m}:${s}`;
+
+            document.getElementById('result-score').textContent = `${perc}%`;
+            document.getElementById('res-total').textContent = total;
+            document.getElementById('res-correct').textContent = quizState.correct;
+            document.getElementById('res-wrong').textContent = quizState.wrong;
+            document.getElementById('res-time').textContent = timeStr;
+            
+            // Add a mock row to history
+            const tbody = document.querySelector('.history-table tbody');
+            const row = document.createElement('tr');
+            const modeScoreClass = perc > 70 ? 'score-good' : (perc > 50 ? 'score-avg' : 'score-bad');
+            
+            row.innerHTML = `
+                <td>${document.getElementById('setup-subject').value}</td>
+                <td>${total}</td>
+                <td><span class="score-badge ${modeScoreClass}">${perc}%</span></td>
+                <td>${timeStr}</td>
+                <td>Just Now</td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+        }
+
+        function resetPractice() {
+            switchPracticeView('setup');
+            window.scrollTo(0,0);
+        }
+
+        // ======================= CONTACT FORM =======================
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            e.target.reset();
+            showToast("Success! Your message was sent.");
+        }
+
+        // ======================= TOAST UI & THEME =======================
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('theme-btn').textContent = isLight ? "🌙" : "☀️";
+        }
+
+        // Bootsrap Application
+        window.onload = function() {
+            initHome();
+            initPractice();
+            showPage('home'); // Entry Point
+        }
+    </script>
+</body>
+</html>
