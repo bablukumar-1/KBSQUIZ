@@ -1,5 +1,6 @@
 <div align="center">
-  <img src="assets/banner.png" alt="KBSQUIZ Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;">
+  <!-- <img src="assets/banner.png" alt="KBSQUIZ Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;"> -->
+<img width="1891" height="833" alt="image" src="https://github.com/user-attachments/assets/1aace823-d326-4062-ae7a-f0c852df98a8" />
 
   # 🏆 KBSQUIZ
 
